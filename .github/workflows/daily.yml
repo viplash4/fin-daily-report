@@ -1,0 +1,36 @@
+name: Daily Monobank Report
+
+on:
+  schedule:
+    # Запуск щодня о 07:00 UTC (≈ 09:00/10:00 Kyiv залежно від сезону)
+    - cron: '0 7 * * *'
+  workflow_dispatch: # Дозволяє ручний запуск
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Run report
+        env:
+          MONO_TOKEN: ${{ secrets.MONO_TOKEN }}
+          MONO_ACCOUNT_ID: ${{ secrets.MONO_ACCOUNT_ID }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: npm start
+
