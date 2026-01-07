@@ -3,7 +3,7 @@
  */
 
 import { MonobankTransaction } from './mono';
-import { formatAmountWithSeparators, formatDate, getYesterdayRange, getTodayRange } from './utils';
+import { formatAmountWithSeparators, formatDate, getTodayRange } from './utils';
 import mccMap from '../mcc_map.json';
 
 interface CategoryInfo {
@@ -71,15 +71,14 @@ function categorizeTransactions(
   return categories;
 }
 
-export function generateReport(transactions: MonobankTransaction[], isToday: boolean = false): string {
+export function generateReport(transactions: MonobankTransaction[]): string {
   const expenses = filterExpenses(transactions);
   
-  const [from] = isToday ? getTodayRange() : getYesterdayRange();
+  const [from] = getTodayRange();
   const dateStr = formatDate(from);
   
   if (expenses.length === 0) {
-    const periodText = isToday ? 'Сьогодні витрат не було.' : 'Вчора витрат не було.';
-    return `📅 Витрати за ${dateStr}\n\n${periodText}`;
+    return `📅 Витрати за ${dateStr}\n\nСьогодні витрат не було.`;
   }
   
   const categories = categorizeTransactions(expenses);

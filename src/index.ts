@@ -4,7 +4,7 @@ try {
   // dotenv не обов'язковий
 }
 
-import { getYesterdayStatement, getTodayStatement } from './mono';
+import { getTodayStatement } from './mono';
 import { generateReport, getTransactionStats } from './report';
 import { sendMessage } from './telegram';
 
@@ -14,7 +14,6 @@ interface Config {
   tgBotToken: string;
   tgChatId: string;
   dryRun: boolean;
-  reportToday: boolean;
 }
 
 function getConfig(): Config {
@@ -23,7 +22,6 @@ function getConfig(): Config {
   const tgBotToken = process.env.TG_BOT_TOKEN;
   const tgChatId = process.env.TG_CHAT_ID;
   const dryRun = process.env.DRY_RUN === 'true';
-  const reportToday = process.env.REPORT_TODAY === 'true';
   
   if (!monoToken) {
     throw new Error('MONO_TOKEN не встановлено');
@@ -44,7 +42,6 @@ function getConfig(): Config {
     tgBotToken,
     tgChatId,
     dryRun,
-    reportToday,
   };
 }
 
@@ -56,12 +53,9 @@ async function main() {
       console.log('🔍 DRY_RUN режим: повідомлення не будуть надсилатися в Telegram');
     }
     
-    const period = config.reportToday ? 'сьогодні' : 'вчора';
-    console.log(`📥 Отримую транзакції з Monobank за ${period}...`);
+    console.log('📥 Отримую транзакції з Monobank за сьогодні...');
     
-    const transactions = config.reportToday
-      ? await getTodayStatement(config.monoToken, config.monoAccountId)
-      : await getYesterdayStatement(config.monoToken, config.monoAccountId);
+    const transactions = await getTodayStatement(config.monoToken, config.monoAccountId);
     
     const stats = getTransactionStats(transactions);
     console.log(
@@ -69,7 +63,7 @@ async function main() {
     );
     
     console.log('📊 Формую звіт...');
-    const report = generateReport(transactions, config.reportToday);
+    const report = generateReport(transactions);
     
     if (config.dryRun) {
       console.log('\n--- ЗВІТ (DRY_RUN) ---');
